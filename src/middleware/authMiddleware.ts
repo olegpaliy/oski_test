@@ -8,7 +8,6 @@ const { Unauthorized } = createHttpError;
 
 export const authMiddleware: ControllerAction = (req, res, next) => {
   const authHeader = req.headers.authorization || "";
-
   const [, token] = authHeader.split(" ");
 
   if (!token) {

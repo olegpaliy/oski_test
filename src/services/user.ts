@@ -5,7 +5,8 @@ import { UsersAssessments } from "../models/UsersAssessments";
 import { Assessment } from "../models/Assessments";
 import { Question } from "../models/Questions";
 import { Answer } from "../models/Answers";
-import { Op } from "sequelize";
+import { UsersAssessmentsAttributes } from "../types/UsersAssessments";
+import { AnswersAttributes } from "../types/Answers";
 
 const signUp = async (user: UserAttributes) => {
   const { firstName, lastName, email, password } = user;
@@ -55,19 +56,6 @@ const getUserById = async (userId: string) => {
     include: [
       {
         model: UsersAssessments,
-        include: [
-          {
-            model: Assessment,
-          },
-          {
-            model: Answer,
-            include: [
-              {
-                model: Question,
-              },
-            ],
-          },
-        ],
       },
     ],
   });
@@ -75,16 +63,54 @@ const getUserById = async (userId: string) => {
   return user;
 };
 
-const getAnswers = async (userAssessmentId: string) => {
-  const answers = await Answer.findAll({
-    where: {
-      userAssessmentId: { [Op.eq]: userAssessmentId },
-    },
+const getUserAssessment = async (userAssessmentId: string) => {
+  const usersAssessment = await UsersAssessments.findByPk(userAssessmentId, {
+    include: [
+      {
+        model: Answer,
+        include: [
+          {
+            model: Question,
+          },
+        ],
+      },
+    ],
   });
+
+  return usersAssessment;
+};
+
+const updateUserAssessment = async (
+  userAssessmentId: string,
+  body: UsersAssessmentsAttributes & { answer: AnswersAttributes[] }
+) => {
+  const usersAssessment = await UsersAssessments.findByPk(userAssessmentId);
+
+  if (usersAssessment?.completed) {
+    throw new Error("User assessment already completed!");
+  }
+
+  await usersAssessment?.update({
+    completed: true,
+  });
+
+  await Promise.all(
+    body.answer.map(async (item) => {
+      const answer = await Answer.findByPk(item.id);
+
+      return answer?.update({
+        answer: item.answer,
+      });
+    })
+  );
+
+  return usersAssessment;
 };
 
 export const userService = {
   signUp,
   signIn,
   getUserById,
+  getUserAssessment,
+  updateUserAssessment,
 };

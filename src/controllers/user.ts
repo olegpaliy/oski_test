@@ -88,9 +88,36 @@ const signOut: ControllerAction = async (req, res, next) => {
   }
 };
 
+const getUserAssessment: ControllerAction = async (req, res, next) => {
+  try {
+    const usersAssessment = await userService.getUserAssessment(
+      req.params.userAssessmentId
+    );
+
+    res.send(usersAssessment);
+  } catch (error) {
+    next(error);
+  }
+};
+
+const updateUserAssessment: ControllerAction = async (req, res, next) => {
+  try {
+    const updateUserAssessment = await userService.updateUserAssessment(
+      req.params.userAssessmentId,
+      req.body
+    );
+
+    res.send(updateUserAssessment);
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const userController = {
   signUp,
   signIn,
   profile,
   signOut,
+  getUserAssessment,
+  updateUserAssessment,
 };
