@@ -32,18 +32,15 @@ const signIn: ControllerAction = async (req, res, next) => {
       return;
     }
 
-    const checkUser = await userService.signIn(req.body);
+    const user = await userService.signIn(req.body);
 
-    if (!checkUser) {
+    if (!user) {
       next(new NotFound("User not found"));
 
       return;
     }
 
-    const passwordIsValid = bcryp.compareSync(
-      req.body.password,
-      checkUser.password
-    );
+    const passwordIsValid = bcryp.compareSync(req.body.password, user.password);
 
     if (!passwordIsValid) {
       next(new Unauthorized("email or password is incorrect"));
@@ -51,11 +48,13 @@ const signIn: ControllerAction = async (req, res, next) => {
       return;
     }
 
-    const token = jwt.sign({ id: checkUser.id }, `${Secret}`, {
+    const token = jwt.sign({ id: user.id }, `${Secret}`, {
       algorithm: "HS256",
       allowInsecureKeySizes: true,
       expiresIn: 86400,
     });
+
+    // console.log(token);
 
     cache.set(token, "logout", 86400);
 
@@ -91,7 +90,7 @@ const signOut: ControllerAction = async (req, res, next) => {
 const getUserAssessment: ControllerAction = async (req, res, next) => {
   try {
     const usersAssessment = await userService.getUserAssessment(
-      req.params.userAssessmentId
+      req.params.userAssessmentId, req.params.userId
     );
 
     res.send(usersAssessment);

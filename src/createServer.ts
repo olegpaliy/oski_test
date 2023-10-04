@@ -30,7 +30,6 @@ export const createServer = () => {
   };
 
   const swaggerDocs = swaggerJsDoc(swaggerOptions);
-  console.log(swaggerDocs);
   app.use("/swagger", swaggerUI.serve, swaggerUI.setup(swaggerDocs));
 
   app.use((req, res, next) => {

@@ -56,6 +56,11 @@ const getUserById = async (userId: string) => {
     include: [
       {
         model: UsersAssessments,
+        include: [
+          {
+            model: Assessment,
+          },
+        ],
       },
     ],
   });
@@ -63,7 +68,7 @@ const getUserById = async (userId: string) => {
   return user;
 };
 
-const getUserAssessment = async (userAssessmentId: string) => {
+const getUserAssessment = async (userAssessmentId: string, userId: string) => {
   const usersAssessment = await UsersAssessments.findByPk(userAssessmentId, {
     include: [
       {
@@ -76,6 +81,10 @@ const getUserAssessment = async (userAssessmentId: string) => {
       },
     ],
   });
+
+  if (usersAssessment?.userId.toString() !== userId) {
+    throw new Error("auth error");
+  }
 
   return usersAssessment;
 };
